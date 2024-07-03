@@ -106,6 +106,6 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ubuntu
         key: ${{ secrets.PRIVATE_PEM_KEY }}
-        envs: GITHUB_SHA,REPO
+        envs: GITHUB_SHA,AWS_ECR_REGISTRY,AWS_ECR_REPOSITORY
         script: |
           ./deploy.sh $AWS_ECR_REGISTRY $AWS_ECR_REPOSITORY ${GITHUB_SHA::7}
