@@ -2,8 +2,10 @@ package com.wl2c.elswhereapigatewayserver.filter;
 
 import com.wl2c.elswhereapigatewayserver.exception.AccessTokenRequiredException;
 import com.wl2c.elswhereapigatewayserver.exception.LocalizedMessageException;
+import com.wl2c.elswhereapigatewayserver.exception.LoggedOutAccessTokenException;
 import com.wl2c.elswhereapigatewayserver.exception.NotGrantedException;
 import com.wl2c.elswhereapigatewayserver.util.JwtUtil;
+import com.wl2c.elswhereapigatewayserver.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -28,6 +30,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     private JwtUtil jwtUtil;
 
     @Autowired
+    private RedisUtil redisUtil;
+
+    @Autowired
     private MessageSource messageSource;
 
     private static final String SIGN_UP_PATH = "/callback";
@@ -49,6 +54,8 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return (exchange, chain) -> {
             try {
                 jwtUtil.getAccessTokenFromHeader(exchange.getRequest()).ifPresentOrElse(accessToken -> {
+                        checkIfAccessTokenIsLogout(accessToken);
+
                         if (isTokenRefreshRequested(exchange.getRequest())) {
                             return;
                         }
@@ -86,6 +93,12 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     private boolean tokenAuthenticationRequired(ServerHttpRequest request) {
         return TOKEN_AUTH_WHITELIST.stream()
                 .noneMatch(uri -> request.getURI().getPath().contains(uri));
+    }
+
+    private void checkIfAccessTokenIsLogout(String accessToken) {
+        if (redisUtil.hasKey(accessToken)) {
+            throw new LoggedOutAccessTokenException();
+        }
     }
 
     private Mono<Void> onError(ServerHttpResponse response, Locale locale, LocalizedMessageException e) {
