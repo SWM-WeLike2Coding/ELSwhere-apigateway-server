@@ -10,4 +10,8 @@ public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
 }
