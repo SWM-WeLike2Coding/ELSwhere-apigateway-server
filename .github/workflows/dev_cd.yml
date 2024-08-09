@@ -55,11 +55,14 @@ jobs:
 
     - name: Make test properties
       env:
-        PROPERTIES: ${{ secrets.PROPERTIES_TEST }}
+        PROPERTIES: ${{ secrets.PROPERTIES }}
+        PROPERTIES_TEST: ${{ secrets.PROPERTIES_TEST }}
       run: |
         mkdir -p ./src/test/resources && cd "$_"
         touch ./application.yml
+        touch ./application-test.yml
         echo $PROPERTIES | base64 --decode > application.yml
+        echo $PROPERTIES_TEST | base64 --decode > application-test.yml
       shell: bash
 
     - name: Setup Gradle
