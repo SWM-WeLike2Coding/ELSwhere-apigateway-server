@@ -32,7 +32,9 @@ jobs:
       run: |
         mkdir -p ./src/test/resources && cd "$_"
         touch ./application.yml
+        touch ./application-test.yml
         echo $PROPERTIES | base64 --decode > application.yml
+        echo $PROPERTIES_TEST | base64 --decode > application-test.yml
       shell: bash
         
     - name: Setup Gradle
